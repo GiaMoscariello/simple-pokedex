@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  mockserver:
+    image: mockserver/mockserver
+    ports:
+      - '1080:1080'
+  wiremock:
+    image: wiremock/wiremock
+    ports:
+      - '8080:8080'

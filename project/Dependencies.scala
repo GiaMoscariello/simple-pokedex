@@ -6,10 +6,11 @@ object Dependencies {
   val scalaVersion = "2.13.8"
   val Log4jVersion = "2.17.2"
   val CirceVersion = "0.14.2"
-  val SttpVersion = "3.6.2"
+  val SttpVersion = "3.8.2"
   val TestContainersVersion = "0.40.8"
-  val MockServerJavaVersion = "5.13.2"
+  val MockServerJavaVersion = "5.14.0"
   val CatsEffectVersion = "3.3.12"
+
 
   val Http4sVersion = "0.23.0"
 
@@ -32,7 +33,10 @@ object Dependencies {
 
   val testDependencies: Seq[ModuleID] = Seq(
     "org.scalatest" %% "scalatest" % "3.2.12" % Test,
-    "com.github.tomakehurst" % "wiremock-jre8" % "2.35.0" % Test
+    "com.github.tomakehurst" % "wiremock-jre8" % "2.35.0" % Test,
+    "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % Test,
+    "org.mockito" %% "mockito-scala-cats" % "1.17.12" % Test,
+    "org.mock-server" % "mockserver-client-java" % MockServerJavaVersion %Test
   )
 
   val loggingDependencies: Seq[ModuleID] = Seq(
@@ -43,6 +47,7 @@ object Dependencies {
   val sttpDependencies: Seq[ModuleID] = Seq(
     "com.softwaremill.sttp.client3" %% "core",
     "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats",
+    "com.softwaremill.sttp.client3" %% "armeria-backend-cats"
   ).map(_ % SttpVersion)
 
   val cacheDependencies =
