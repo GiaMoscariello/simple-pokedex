@@ -1,0 +1,12 @@
+{
+  "request": {
+    "url": "/pokemon-species/not-a-pokemon",
+    "method": "GET"
+  },
+  "response": {
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

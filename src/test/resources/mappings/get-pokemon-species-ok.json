@@ -1,0 +1,13 @@
+{
+  "request": {
+    "url": "/pokemon-species/mewtwo",
+    "method": "GET"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "pokemon-correct-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
