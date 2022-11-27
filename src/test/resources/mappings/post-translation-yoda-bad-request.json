@@ -1,0 +1,16 @@
+{
+  "request": {
+    "url": "/translate/yoda.json",
+    "method": "POST",
+    "bodyPatterns": [{
+      "equalToJson": {"text": "It was created by a scientist after years of horrific\\fgene splicing and DNA engineering experiments."}
+    }]
+  },
+  "response": {
+    "status": 400,
+    "bodyFileName": "translation-bad-request-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

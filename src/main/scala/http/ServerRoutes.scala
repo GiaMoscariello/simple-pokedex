@@ -2,8 +2,7 @@ package http
 
 import cats.effect.IO
 import io.circe.syntax.EncoderOps
-import models.HttpModels.{ApiResponseError, InternalError, Pokemon, PokemonSpeciesApiResponse}
-import models.models._
+import models.{ApiResponseError, ExposedRoutes, InternalError, Pokemon, PokemonSpeciesApiResponse}
 import org.http4s.{HttpRoutes, Response}
 import org.http4s.circe.jsonEncoder
 import org.http4s.dsl.Http4sDsl
@@ -12,7 +11,9 @@ import org.typelevel.log4cats.Logger
 import org.http4s.server.middleware
 
 class ServerRoutes(private val exposedRoutes: ExposedRoutes,
-                   private val backend: PokemonApiClient)(implicit logger: Logger[IO]) {
+                   private val pokemonClient: PokemonApiClient,
+                   private val translationClient: TranslationApiClient
+                  )(implicit logger: Logger[IO]) {
 
   def routes: HttpRoutes[IO] = {
     val dsl = Http4sDsl[IO]
@@ -29,7 +30,7 @@ class ServerRoutes(private val exposedRoutes: ExposedRoutes,
     val dsl = Http4sDsl[IO]
     import dsl._
 
-    backend.pokemonSpecies(pokemon)
+    pokemonClient.pokemonSpecies(pokemon)
       .attempt
       .flatMap {
         case Left(err) => logger.error(s"${err.getMessage}") *>

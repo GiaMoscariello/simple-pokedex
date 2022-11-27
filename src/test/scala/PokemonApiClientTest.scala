@@ -17,17 +17,14 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 class PokemonApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
   implicit val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
-  val endpoint = PokemonApiEndpoints(baseUrl = "http://pokemon/api/v2", pokemonSpecies = "pokemon-species")
-
   val endpoints = PokemonApiEndpoints(baseUrl = s"http://localhost:8080", pokemonSpecies = "pokemon-species")
   val wireMockServer = new WireMockServer(WireMockConfiguration.options().
     port(8080).
     usingFilesUnderDirectory("./src/test/resources"))
 
-  val responseFilePath = "src/test/resources/mewtwo-correct-response.json"
   val POKEMON = "mewtwo"
   val WRONG_POKEMON = "not-a-pokemon"
-  val pokemonSpeciesUrl: String = endpoint.pokemonSpeciesFor(POKEMON)
+  val POKEMON_SPECIES_URL: String = endpoints.pokemonSpeciesFor(POKEMON)
 
   val cache: Cache[String, String] = Scaffeine()
     .recordStats()

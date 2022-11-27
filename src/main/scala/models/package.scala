@@ -47,13 +47,16 @@ package object models {
     val shakespeareEndpoint = s"${baseUrl}/${shakespeare}"
   }
 
+
   @ConfiguredJsonCodec case class TranslationRequest(text: String)
 
   @ConfiguredJsonCodec case class TranslationResponseSuccess(contents: Contents) extends TranslationResponse
 
   @ConfiguredJsonCodec case class Contents(translated: String, text: String, translation: String)
 
-  @ConfiguredJsonCodec case class TranslationResponseError(error: ErrorTranslation) extends TranslationResponse
+  @ConfiguredJsonCodec case class TranslationResponseError(error: ErrorTranslation)
+    extends TranslationResponse
+      with HttpError
 
   @ConfiguredJsonCodec case class ErrorTranslation(code: Int, message: String)
 

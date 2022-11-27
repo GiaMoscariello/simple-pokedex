@@ -1,0 +1,16 @@
+{
+  "request": {
+    "url": "/translate/shakespeare.json",
+    "method": "POST",
+    "bodyPatterns": [{
+      "equalToJson": {"text": "When several of these POKéMON gather, their electricity could build and cause lightning storms"}
+    }]
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "shakespeare-ok-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
