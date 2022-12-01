@@ -2,12 +2,12 @@ package http
 
 import cats.effect.IO
 import com.github.blemale.scaffeine.Cache
+import io.circe.parser.decode
 import io.circe.syntax.EncoderOps
 import models.{TranslationEndpoints, TranslationRequest, TranslationResponse, TranslationResponseError, TranslationResponseSuccess}
-import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
-import sttp.client3.{Identity, RequestT, UriContext, basicRequest}
-import io.circe.parser.decode
 import org.typelevel.log4cats.Logger
+import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
+import sttp.client3.{UriContext, basicRequest}
 
 case class TranslationApiClient(endpoint: TranslationEndpoints, private val cache: Cache[String, String])(implicit logger: Logger[IO]) {
 

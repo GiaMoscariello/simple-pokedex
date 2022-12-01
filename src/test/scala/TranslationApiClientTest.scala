@@ -40,10 +40,10 @@ class TranslationApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
   val YODA_REQUEST: TranslationRequest =
     TranslationRequest("It was created by a scientist after years of horrific gene splicing and DNA engineering experiments.")
 
-  val WRONG_SHAKESPEARE_REQUEST =
+  val WRONG_SHAKESPEARE_REQUEST: TranslationRequest =
     TranslationRequest("This POKéMON has electricity-storing pouches on its cheeks. These appear to become electrically charged during the\\fnight while PIKACHU sleeps. It occasionally discharges electricity when it is dozy after waking up.")
 
-  val WRONG_YODA_REQUEST =
+  val WRONG_YODA_REQUEST: TranslationRequest =
     TranslationRequest("It was created by a scientist after years of horrific\\fgene splicing and DNA engineering experiments.")
 
   val SHAKESPEARE_TRANSLATED_RESPONSE: TranslationResponseSuccess = TranslationResponseSuccess(contents = Contents(
