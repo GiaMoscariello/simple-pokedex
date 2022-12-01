@@ -1,12 +1,12 @@
-package http
+package services
 
 import cats.effect.IO
 import models.{ApiResponseError, PokemonApiEndpoints, PokemonApiResponse, PokemonSpecies, PokemonSpeciesApiResponse}
-import io.circe.parser.decode
-import sttp.client3._
 import org.typelevel.log4cats.Logger
 import persistence.HttpCache
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
+import sttp.client3.{UriContext, basicRequest}
+import io.circe.parser.decode
 
 case class PokemonApiClient(endpoint: PokemonApiEndpoints, private val cache: HttpCache[String, String])(implicit logger: Logger[IO]) {
   def pokemonSpecies(pokemon: String): IO[PokemonApiResponse] = {
@@ -22,7 +22,7 @@ case class PokemonApiClient(endpoint: PokemonApiEndpoints, private val cache: Ht
           .use(backend =>
             request
               .send(backend)
-              .flatMap {response =>
+              .flatMap { response =>
                 val statusCode = response.code.code
                 response.body.fold[IO[PokemonApiResponse]](
                   error => handleErrorResponse(error, requestUrl, statusCode),

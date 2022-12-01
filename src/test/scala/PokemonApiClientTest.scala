@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
-import http.PokemonApiClient
 import io.circe.syntax.EncoderOps
 import models.{ApiResponseError, FlavorText, Habitat, Language, PokemonApiEndpoints, PokemonSpecies, PokemonSpeciesApiResponse}
 import org.scalatest.BeforeAndAfterEach
@@ -13,6 +12,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import persistence.{HttpCache, InMemoryCache}
+import services.PokemonApiClient
 
 
 class PokemonApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
@@ -28,7 +28,7 @@ class PokemonApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
   val POKEMON_SPECIES_URL: String = endpoints.pokemonSpeciesFor(POKEMON)
   val cache: HttpCache[String, String] = new InMemoryCache()
 
-  val stub: PokemonApiClient = PokemonApiClient(endpoints, cache)
+  val stub: PokemonApiClient = services.PokemonApiClient(endpoints, cache)
   lazy val stubWithCache: PokemonApiClient = stub.copy(cache = stubbedCached)
 
   val pokemonSpeciesApiResponse: PokemonSpeciesApiResponse = PokemonSpeciesApiResponse(200,

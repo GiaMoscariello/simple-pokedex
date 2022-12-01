@@ -1,9 +1,8 @@
-package http
+package services
 
 import cats.effect.IO
-import com.github.blemale.scaffeine.Cache
-import io.circe.parser.decode
 import io.circe.syntax.EncoderOps
+import io.circe.parser.decode
 import models.{TranslationEndpoints, TranslationRequest, TranslationResponse, TranslationResponseError, TranslationResponseSuccess}
 import org.typelevel.log4cats.Logger
 import persistence.HttpCache
@@ -43,7 +42,7 @@ case class TranslationApiClient(endpoint: TranslationEndpoints, private val cach
     }
   }
 
-  private def sendRequest(bodyRequest: TranslationRequest,  uri: String): IO[TranslationResponse] = {
+  private def sendRequest(bodyRequest: TranslationRequest, uri: String): IO[TranslationResponse] = {
     AsyncHttpClientCatsBackend
       .resource[IO]()
       .use(backend =>
@@ -52,12 +51,12 @@ case class TranslationApiClient(endpoint: TranslationEndpoints, private val cach
           .flatMap(_.body.fold[IO[TranslationResponse]](
             error => {
               cache.put(bodyRequest.asJson.toString, error) >>
-              logger.info(error) >>
-              IO.fromEither(decode[TranslationResponseError](error))
+                logger.info(error) >>
+                IO.fromEither(decode[TranslationResponseError](error))
             },
             success => {
               cache.put(bodyRequest.asJson.toString, success) >>
-              IO.fromEither(decode[TranslationResponseSuccess](success))
+                IO.fromEither(decode[TranslationResponseSuccess](success))
             }
           ))
       )

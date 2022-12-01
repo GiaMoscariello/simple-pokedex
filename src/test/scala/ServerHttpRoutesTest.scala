@@ -3,7 +3,7 @@ import cats.effect.unsafe.implicits.global
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
-import http.{PokemonApiClient, ServerRoutes, TranslationApiClient}
+import http.ServerRoutes
 import models.{ExposedRoutes, PokemonApiEndpoints, TranslationEndpoints}
 import org.http4s.LiteralSyntaxMacros.uri
 import org.http4s.Method.GET
@@ -15,6 +15,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import persistence.{HttpCache, InMemoryCache}
+import services.{Engine, PokemonApiClient, TranslationApiClient}
 
 import java.nio.charset.StandardCharsets.UTF_8
 import java.net.URLEncoder
@@ -29,17 +30,16 @@ class ServerHttpRoutesTest extends AnyFlatSpec with BeforeAndAfterEach {
   val cache: HttpCache[String, String] = new InMemoryCache()
 
   val pokemonEndpoints = PokemonApiEndpoints(baseUrl = s"http://localhost:8080", pokemonSpecies = "pokemon-species")
-  val pokemonClient: PokemonApiClient = PokemonApiClient(pokemonEndpoints, cache)
+  val pokemonClient: PokemonApiClient = services.PokemonApiClient(pokemonEndpoints, cache)
 
   val translationEndpoints = TranslationEndpoints(baseUrl = s"http://localhost:8080/translate", yoda="yoda.json", shakespeare = "shakespeare.json")
-  val translationClient: TranslationApiClient = TranslationApiClient(translationEndpoints, cache)
+  val translationClient: TranslationApiClient = services.TranslationApiClient(translationEndpoints, cache)
 
   val externalEndpoints = ExposedRoutes("pokemon",  "translated")
-
+  val engine = new Engine(pokemonClient, translationClient)
   val server = new ServerRoutes(
     externalEndpoints,
-    pokemonClient,
-    translationClient
+    engine
   )
 
   val routes = server.routes
