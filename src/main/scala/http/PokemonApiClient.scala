@@ -1,20 +1,20 @@
 package http
 
 import cats.effect.IO
-import com.github.blemale.scaffeine.Cache
 import models.{ApiResponseError, PokemonApiEndpoints, PokemonApiResponse, PokemonSpecies, PokemonSpeciesApiResponse}
 import io.circe.parser.decode
 import sttp.client3._
 import org.typelevel.log4cats.Logger
+import persistence.HttpCache
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
 
-case class PokemonApiClient(endpoint: PokemonApiEndpoints, private val cache: Cache[String, String])(implicit logger: Logger[IO]) {
+case class PokemonApiClient(endpoint: PokemonApiEndpoints, private val cache: HttpCache[String, String])(implicit logger: Logger[IO]) {
   def pokemonSpecies(pokemon: String): IO[PokemonApiResponse] = {
     val requestUrl = endpoint.pokemonSpeciesFor(pokemon)
     val request = basicRequest
       .get(uri"${requestUrl}")
 
-    cache.getIfPresent(requestUrl) match {
+    cache.get(requestUrl) flatMap {
       case Some(response) => IO.fromEither(handleCachedResult(response, requestUrl))
       case None =>
         AsyncHttpClientCatsBackend
@@ -32,15 +32,13 @@ case class PokemonApiClient(endpoint: PokemonApiEndpoints, private val cache: Ca
     }
   }
 
-  private def handleErrorResponse(errorBody: String, requestUrl: String, statusCode: Int): IO[PokemonApiResponse] = {
-    cache.put(requestUrl, errorBody)
-    IO(ApiResponseError(Some(requestUrl), errorBody, statusCode))
-  }
+  private def handleErrorResponse(errorBody: String, requestUrl: String, statusCode: Int): IO[PokemonApiResponse] =
+    cache.put(requestUrl, errorBody) >> IO(ApiResponseError(Some(requestUrl), errorBody, statusCode))
 
   private def handleSuccessfulResponse(responseBody: String, requestUrl: String, statusCode: Int): IO[PokemonApiResponse] = {
     for {
       pokemon <- IO.fromEither(decode[PokemonSpecies](responseBody))
-      _ = cache.put(requestUrl, responseBody)
+      _ <- cache.put(requestUrl, responseBody)
       pokemonResponse = PokemonSpeciesApiResponse(statusCode, pokemon)
     } yield (pokemonResponse)
   }

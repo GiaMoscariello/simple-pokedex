@@ -6,10 +6,11 @@ import io.circe.parser.decode
 import io.circe.syntax.EncoderOps
 import models.{TranslationEndpoints, TranslationRequest, TranslationResponse, TranslationResponseError, TranslationResponseSuccess}
 import org.typelevel.log4cats.Logger
+import persistence.HttpCache
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
 import sttp.client3.{UriContext, basicRequest}
 
-case class TranslationApiClient(endpoint: TranslationEndpoints, private val cache: Cache[String, String])(implicit logger: Logger[IO]) {
+case class TranslationApiClient(endpoint: TranslationEndpoints, private val cache: HttpCache[String, String])(implicit logger: Logger[IO]) {
 
   def shakespeare(bodyRequest: TranslationRequest): IO[TranslationResponse] = {
     val uri = s"${endpoint.shakespeareEndpoint}"
@@ -29,7 +30,7 @@ case class TranslationApiClient(endpoint: TranslationEndpoints, private val cach
   }
 
   private def getResult(bodyRequest: TranslationRequest, uri: String): IO[TranslationResponse] = {
-    cache.getIfPresent(bodyRequest.asJson.toString) match {
+    cache.get(bodyRequest.asJson.toString).flatMap {
       case Some(response) => IO.fromEither(handleCacheResult(response))
       case None => sendRequest(bodyRequest, uri)
     }
@@ -50,12 +51,12 @@ case class TranslationApiClient(endpoint: TranslationEndpoints, private val cach
           .send(backend)
           .flatMap(_.body.fold[IO[TranslationResponse]](
             error => {
-              cache.put(bodyRequest.asJson.toString, error)
-              logger.info(error) *>
+              cache.put(bodyRequest.asJson.toString, error) >>
+              logger.info(error) >>
               IO.fromEither(decode[TranslationResponseError](error))
             },
             success => {
-              cache.put(bodyRequest.asJson.toString, success)
+              cache.put(bodyRequest.asJson.toString, success) >>
               IO.fromEither(decode[TranslationResponseSuccess](success))
             }
           ))

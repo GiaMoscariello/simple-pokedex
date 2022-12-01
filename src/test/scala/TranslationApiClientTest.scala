@@ -12,6 +12,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import persistence.{HttpCache, InMemoryCache}
 
 class TranslationApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
   implicit val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
@@ -22,9 +23,7 @@ class TranslationApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
     port(8080).
     usingFilesUnderDirectory("./src/test/resources"))
 
-  val cache: Cache[String, String] = Scaffeine()
-    .recordStats()
-    .build[String, String]()
+  val cache: HttpCache[String, String] = new InMemoryCache()
 
   val stub: TranslationApiClient = TranslationApiClient(endpoints, cache)
 
@@ -54,10 +53,8 @@ class TranslationApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
     translated = YODA_TRANSLATED, text = YODA_REQUEST.text, translation = "yoda"
   ))
 
-  private def stubbedCache: Cache[String, String] = {
-    val stubbedCache = Scaffeine()
-      .recordStats()
-      .build[String, String]()
+  private def stubbedCache: HttpCache[String, String] = {
+    val stubbedCache: HttpCache[String, String] = new InMemoryCache()
 
     stubbedCache.put(SHAKESPEARE_REQUEST.asJson.toString, SHAKESPEARE_TRANSLATED_RESPONSE.asJson.toString)
     stubbedCache.put(YODA_REQUEST.asJson.toString, YODA_TRANSLATED_RESPONSE.asJson.toString)

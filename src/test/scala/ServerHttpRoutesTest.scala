@@ -14,9 +14,9 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import persistence.{HttpCache, InMemoryCache}
+
 import java.nio.charset.StandardCharsets.UTF_8
-
-
 import java.net.URLEncoder
 
 class ServerHttpRoutesTest extends AnyFlatSpec with BeforeAndAfterEach {
@@ -26,9 +26,7 @@ class ServerHttpRoutesTest extends AnyFlatSpec with BeforeAndAfterEach {
     port(8080).
     usingFilesUnderDirectory("./src/test/resources"))
 
-  val cache: Cache[String, String] = Scaffeine()
-    .recordStats()
-    .build[String, String]()
+  val cache: HttpCache[String, String] = new InMemoryCache()
 
   val pokemonEndpoints = PokemonApiEndpoints(baseUrl = s"http://localhost:8080", pokemonSpecies = "pokemon-species")
   val pokemonClient: PokemonApiClient = PokemonApiClient(pokemonEndpoints, cache)

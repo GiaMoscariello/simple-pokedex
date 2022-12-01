@@ -12,6 +12,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import persistence.{HttpCache, InMemoryCache}
 
 
 class PokemonApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
@@ -25,9 +26,7 @@ class PokemonApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
   val POKEMON = "mewtwo"
   val WRONG_POKEMON = "not-a-pokemon"
   val POKEMON_SPECIES_URL: String = endpoints.pokemonSpeciesFor(POKEMON)
-  val cache: Cache[String, String] = Scaffeine()
-    .recordStats()
-    .build[String, String]()
+  val cache: HttpCache[String, String] = new InMemoryCache()
 
   val stub: PokemonApiClient = PokemonApiClient(endpoints, cache)
   lazy val stubWithCache: PokemonApiClient = stub.copy(cache = stubbedCached)
@@ -46,13 +45,12 @@ class PokemonApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
 
   val apiResponseError: ApiResponseError = ApiResponseError(Some("http://localhost:8080/pokemon-species/not-a-pokemon"),"",404)
 
-  private def stubbedCached: Cache[String, String] = {
-    val stubbedCache: Cache[String, String] = Scaffeine()
-      .recordStats()
-      .build[String, String]()
+  private def stubbedCached: HttpCache[String, String] = {
+    val stubbedCache: HttpCache[String, String] = new InMemoryCache()
 
     stubbedCache.put(endpoints.pokemonSpeciesFor(WRONG_POKEMON), apiResponseError.asJson.toString)
     stubbedCache.put(endpoints.pokemonSpeciesFor(POKEMON), pokemonSpeciesApiResponse.pokemon.asJson.toString)
+
     stubbedCache
   }
 
