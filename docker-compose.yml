@@ -3,7 +3,40 @@ version: '3'
 services:
   wiremock:
     image: wiremock/wiremock
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.5
     ports:
       - '8080:8080'
     volumes:
       - ./src/test/resources:/home/wiremock
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "sbt test"
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.6
+    environment:
+      WIREMOCK_HOST: "10.5.0.5"
+    depends_on:
+      - wiremock
+
+#  swagger-ui:
+#    image: swaggerapi/swagger-ui
+#    container_name: swagger_ui_container
+#    ports:
+#      - "80:8080"
+#    volumes:
+#      - ./doc:/usr/share/nginx/html/doc
+#    environment:
+#      API_URL: doc/openapi.yaml
+
+networks:
+  vpcbr:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1

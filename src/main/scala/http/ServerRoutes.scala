@@ -9,9 +9,7 @@ import org.http4s.server.middleware
 import org.typelevel.log4cats.Logger
 import services.Engine
 
-class ServerRoutes(private val exposedRoutes: ExposedRoutes,
-                   private val engine: Engine
-                  )(implicit logger: Logger[IO]) {
+class ServerRoutes(private val exposedRoutes: ExposedRoutes, private val engine: Engine)(implicit logger: Logger[IO]) {
 
   def routes: HttpRoutes[IO] = {
     val dsl = Http4sDsl[IO]

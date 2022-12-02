@@ -1,10 +1,7 @@
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import com.github.blemale.scaffeine.{Cache, Scaffeine}
-import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock.{equalToJson, getRequestedFor, postRequestedFor, urlEqualTo, verify}
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.github.tomakehurst.wiremock.client.WireMock.{equalToJson, postRequestedFor, urlEqualTo, verify}
+import com.github.tomakehurst.wiremock.client.{CountMatchingStrategy, WireMock}
 import io.circe.syntax.EncoderOps
 import models.{Contents, TranslationEndpoints, TranslationRequest, TranslationResponseError, TranslationResponseSuccess}
 import org.scalatest.BeforeAndAfterEach
@@ -17,13 +14,13 @@ import services.TranslationApiClient
 class TranslationApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
   implicit val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
-  val endpoints = TranslationEndpoints(baseUrl = s"http://localhost:8080/translate", yoda="yoda.json", shakespeare = "shakespeare.json")
+  val host = sys.env.getOrElse("WIREMOCK_HOST", "localhost")
 
-  val wireMockServer = new WireMockServer(WireMockConfiguration.options().
-    port(8080).
-    usingFilesUnderDirectory("./src/test/resources"))
+  val endpoints = TranslationEndpoints(baseUrl = s"http://${host}:8080/translate", yoda="yoda.json", shakespeare = "shakespeare.json")
 
   val cache: HttpCache[String, String] = new InMemoryCache()
+
+  WireMock.configureFor(host, 8080)
 
   val stub: TranslationApiClient = services.TranslationApiClient(endpoints, cache)
 
@@ -61,6 +58,8 @@ class TranslationApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
     stubbedCache
   }
 
+  val atLeastOneFor = new CountMatchingStrategy(CountMatchingStrategy.GREATER_THAN_OR_EQUAL, 1)
+  val noRequestFor = new CountMatchingStrategy(CountMatchingStrategy.EQUAL_TO, 0)
 
   override def beforeEach(): Unit = {
     WireMock.resetAllRequests()
@@ -79,7 +78,7 @@ class TranslationApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
   "calling translation yoda api with correct input" should "return 200" in {
     val response = stub.yoda(YODA_REQUEST).unsafeRunSync()
 
-    verify(1, postRequestedFor(urlEqualTo("/translate/yoda.json")))
+    verify(atLeastOneFor, postRequestedFor(urlEqualTo("/translate/yoda.json")))
     response match {
       case actual: TranslationResponseSuccess => assert(actual.contents.translated == YODA_TRANSLATED)
       case err: TranslationResponseError => fail(err.error.toString)
