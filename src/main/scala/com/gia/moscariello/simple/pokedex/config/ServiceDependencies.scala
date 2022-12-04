@@ -7,21 +7,22 @@ import com.gia.moscariello.simple.pokedex.persistence.{HttpCache, InMemoryCache}
 import com.gia.moscariello.simple.pokedex.services.{Engine, PokemonApiClient, TranslationApiClient}
 import org.typelevel.log4cats.Logger
 
-case class Dependencies(clientPokemon: PokemonApiClient,
-                        translationClient: TranslationApiClient,
-                        engine: Engine,
-                        serverHttp: ServerRoutes)
+case class ServiceDependencies(clientPokemon: PokemonApiClient,
+                               translationClient: TranslationApiClient,
+                               engine: Engine,
+                               serverHttp: ServerRoutes)
 
-object Dependencies {
+object ServiceDependencies {
 
-  def mkServerRoutes(implicit logger: Logger[IO]): IO[ServerRoutes] = {
+  def make(implicit logger: Logger[IO]): IO[ServerRoutes] = {
     AppConfig.fromEnv.map {
       config =>
         val cache = new InMemoryCache()
         val pokeClient = pokemonClient(config.client, cache)
         val translationClient = mkTranslationClient(config.client, cache)
         val engine = new Engine(pokeClient, translationClient)
-        val routes = new ServerRoutes(
+
+        new ServerRoutes(
           ServerHttpConfig(
             config.server.endpointPokemon,
             config.server.endpointPokemonTranslated,
@@ -29,8 +30,6 @@ object Dependencies {
             config.server.host
           ),
           engine)
-
-        routes
     }
   }
 

@@ -32,7 +32,7 @@ class ServerRoutes(val exposedRoutes: ServerHttpConfig, private val engine: Engi
 
     engine.handleRequestFor(pokemon, withTranslation)
       .attempt.flatMap {
-      case Left(e) => InternalServerError(InternalError("Generic internal server error, please retry in a few moments.", 500))
+      case Left(e) => InternalServerError(InternalError(s"Internal server error, please retry in a few moments. ${e.getMessage}" , 500))
       case Right(s) => IO.pure(s)
     }
   }

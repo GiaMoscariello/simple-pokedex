@@ -49,9 +49,7 @@ class PokemonApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
   private def stubbedCached: HttpCache[String, String] = {
     val stubbedCache: HttpCache[String, String] = new InMemoryCache()
 
-    stubbedCache.put(endpoints.pokemonSpeciesFor(WRONG_POKEMON), apiResponseError.asJson.toString)
     stubbedCache.put(endpoints.pokemonSpeciesFor(POKEMON), pokemonSpeciesApiResponse.pokemon.asJson.toString)
-
     stubbedCache
   }
 
@@ -62,7 +60,7 @@ class PokemonApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
   "calling pokemon-species api for existing pokemon" should "return 200 with the correct pokemon" in {
     val response = stub.pokemonSpecies(POKEMON).unsafeRunSync()
 
-    verify(atLeastOneFor,
+    verify(1,
       getRequestedFor(urlEqualTo(s"/pokemon-species/${POKEMON}"))
     )
 
@@ -76,22 +74,14 @@ class PokemonApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
     "return 200 and should not call api again" in {
     val response = stubWithCache.pokemonSpecies(POKEMON).unsafeRunSync()
 
-    verify(noRequestFor, getRequestedFor(urlEqualTo(s"/pokemon-species/${POKEMON}")))
+    verify(0, getRequestedFor(urlEqualTo(s"/pokemon-species/${POKEMON}")))
     assert(response === pokemonSpeciesApiResponse)
   }
 
   "calling pokemon-species api for a not existing pokemon" should "return 404" in {
     val response = stub.pokemonSpecies(WRONG_POKEMON).unsafeRunSync()
 
-    verify(atLeastOneFor, getRequestedFor(urlEqualTo(s"/pokemon-species/${WRONG_POKEMON}")))
-    assert(response === apiResponseError)
-  }
-
-  "calling pokemon-species api for cached response and not existing pokemon" should
-    "return 404 and should not call api again" in {
-    val response = stubWithCache.pokemonSpecies(WRONG_POKEMON).unsafeRunSync()
-
-    verify(noRequestFor, getRequestedFor(urlEqualTo(s"/pokemon-species/${WRONG_POKEMON}")))
+    verify(1, getRequestedFor(urlEqualTo(s"/pokemon-species/${WRONG_POKEMON}")))
     assert(response === apiResponseError)
   }
 }

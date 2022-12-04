@@ -1,7 +1,7 @@
 package com.gia.moscariello.simple.pokedex
 
 import cats.effect.{ExitCode, IO, IOApp}
-import com.gia.moscariello.simple.pokedex.config.Dependencies
+import com.gia.moscariello.simple.pokedex.config.ServiceDependencies
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
 import org.http4s.server.Router
@@ -16,8 +16,8 @@ object ServerApp extends IOApp {
   implicit val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
 
   override def run(args: List[String]): IO[ExitCode] = {
-    Dependencies
-      .mkServerRoutes
+    ServiceDependencies
+      .make
       .flatMap { server =>
         val routes = server.routes
         BlazeServerBuilder[IO](global)

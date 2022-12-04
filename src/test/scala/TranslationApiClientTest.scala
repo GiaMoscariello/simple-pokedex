@@ -58,9 +58,6 @@ class TranslationApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
     stubbedCache
   }
 
-  val atLeastOneFor = new CountMatchingStrategy(CountMatchingStrategy.GREATER_THAN_OR_EQUAL, 1)
-  val noRequestFor = new CountMatchingStrategy(CountMatchingStrategy.EQUAL_TO, 0)
-
   override def beforeEach(): Unit = {
     WireMock.resetAllRequests()
   }
@@ -78,7 +75,7 @@ class TranslationApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
   "calling translation yoda api with correct input" should "return 200" in {
     val response = stub.yoda(YODA_REQUEST).unsafeRunSync()
 
-    verify(atLeastOneFor, postRequestedFor(urlEqualTo("/translate/yoda.json")))
+    verify(1, postRequestedFor(urlEqualTo("/translate/yoda.json")))
     response match {
       case actual: TranslationResponseSuccess => assert(actual.contents.translated == YODA_TRANSLATED)
       case err: TranslationResponseError => fail(err.error.toString)

@@ -15,7 +15,6 @@ object Dependencies {
   val Http4sVersion = "0.23.0"
 
   val catsDependencies: ModuleID = "org.typelevel" %% "cats-effect" % CatsEffectVersion
-  val scalaXmlDeps = "org.scala-lang.modules" %% "scala-xml" % "2.1.0"
 
   val circeDependencies: Seq[ModuleID] = Seq(
     "io.circe" %% "circe-core" % CirceVersion,

@@ -13,7 +13,7 @@ services:
   test:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: testDockerfile
     command: "sbt test"
     networks:
       vpcbr:
@@ -22,17 +22,6 @@ services:
       WIREMOCK_HOST: "10.5.0.5"
     depends_on:
       - wiremock
-
-#  swagger-ui:
-#    image: swaggerapi/swagger-ui
-#    container_name: swagger_ui_container
-#    ports:
-#      - "80:8080"
-#    volumes:
-#      - ./doc:/usr/share/nginx/html/doc
-#    environment:
-#      API_URL: doc/openapi.yaml
-
 networks:
   vpcbr:
     driver: bridge
