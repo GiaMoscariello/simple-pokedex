@@ -1,4 +1,5 @@
-package persistence
+package com.gia.moscariello.simple.pokedex.persistence
+
 import cats.effect.IO
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
 

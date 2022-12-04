@@ -1,15 +1,15 @@
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
+import com.gia.moscariello.simple.pokedex.models._
+import com.gia.moscariello.simple.pokedex.persistence.{HttpCache, InMemoryCache}
+import com.gia.moscariello.simple.pokedex.services.TranslationApiClient
 import com.github.tomakehurst.wiremock.client.WireMock.{equalToJson, postRequestedFor, urlEqualTo, verify}
 import com.github.tomakehurst.wiremock.client.{CountMatchingStrategy, WireMock}
 import io.circe.syntax.EncoderOps
-import models.{Contents, TranslationEndpoints, TranslationRequest, TranslationResponseError, TranslationResponseSuccess}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import persistence.{HttpCache, InMemoryCache}
-import services.TranslationApiClient
 
 class TranslationApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
   implicit val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
@@ -22,7 +22,7 @@ class TranslationApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
 
   WireMock.configureFor(host, 8080)
 
-  val stub: TranslationApiClient = services.TranslationApiClient(endpoints, cache)
+  val stub: TranslationApiClient = TranslationApiClient(endpoints, cache)
 
   val SHAKESPEARE_TRANSLATED =
     "At which hour several of these pokémon gather,  their electricity couldst buildeth and cause lightning storms"
@@ -112,7 +112,7 @@ class TranslationApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
   }
 
   "calling translation shakespeare api with cached result" should "return 200 and should not call api again" in {
-    val stubWithCache = services.TranslationApiClient(endpoints, stubbedCache)
+    val stubWithCache = TranslationApiClient(endpoints, stubbedCache)
     val response = stubWithCache.shakespeare(SHAKESPEARE_REQUEST).unsafeRunSync()
 
     verify(0, postRequestedFor(urlEqualTo("/translate/shakespeare.json")))
@@ -123,7 +123,7 @@ class TranslationApiClientTest extends AnyFlatSpec with BeforeAndAfterEach {
   }
 
   "calling translation yoda api with cached result" should "return 200 and should not call api again" in {
-    val stubWithCache = services.TranslationApiClient(endpoints, stubbedCache)
+    val stubWithCache = TranslationApiClient(endpoints, stubbedCache)
     val response = stubWithCache.shakespeare(YODA_REQUEST).unsafeRunSync()
 
     verify(0, postRequestedFor(urlEqualTo("/translate/yoda.json")))

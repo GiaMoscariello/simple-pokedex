@@ -1,3 +1,5 @@
+package com.gia.moscariello.simple.pokedex
+
 import io.circe.generic.extras.{Configuration, ConfiguredJsonCodec}
 
 package object models {
@@ -35,7 +37,7 @@ package object models {
 
   @ConfiguredJsonCodec case class Language(name: String, url: Option[String])
 
-  case class ExposedRoutes(pokemon: String, translatedPokemon: String)
+  case class ServerHttpConfig(pokemon: String, translatedPokemon: String, port: Int, host: String)
 
   case class PokemonApiEndpoints(baseUrl: String, pokemonSpecies: String) extends Endpoints {
     val pokemonSpeciesFor: String => String =
@@ -46,7 +48,6 @@ package object models {
     val yodaEndpoint = s"${baseUrl}/${yoda}"
     val shakespeareEndpoint = s"${baseUrl}/${shakespeare}"
   }
-
 
   @ConfiguredJsonCodec case class TranslationRequest(text: String)
 

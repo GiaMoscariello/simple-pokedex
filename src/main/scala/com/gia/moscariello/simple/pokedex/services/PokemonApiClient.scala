@@ -1,12 +1,14 @@
-package services
+package com.gia.moscariello.simple.pokedex.services
 
 import cats.effect.IO
-import models.{ApiResponseError, PokemonApiEndpoints, PokemonApiResponse, PokemonSpecies, PokemonSpeciesApiResponse}
+import com.gia.moscariello.simple.pokedex.models._
+import com.gia.moscariello.simple.pokedex.persistence.HttpCache
 import org.typelevel.log4cats.Logger
-import persistence.HttpCache
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
 import sttp.client3.{UriContext, basicRequest}
 import io.circe.parser.decode
+import io.circe.syntax.EncoderOps
+
 
 case class PokemonApiClient(endpoint: PokemonApiEndpoints, private val cache: HttpCache[String, String])(implicit logger: Logger[IO]) {
   def pokemonSpecies(pokemon: String): IO[PokemonApiResponse] = {
@@ -33,7 +35,7 @@ case class PokemonApiClient(endpoint: PokemonApiEndpoints, private val cache: Ht
   }
 
   private def handleErrorResponse(errorBody: String, requestUrl: String, statusCode: Int): IO[PokemonApiResponse] =
-    cache.put(requestUrl, errorBody) >> IO(ApiResponseError(Some(requestUrl), errorBody, statusCode))
+    IO(ApiResponseError(Some(requestUrl), errorBody, statusCode))
 
   private def handleSuccessfulResponse(responseBody: String, requestUrl: String, statusCode: Int): IO[PokemonApiResponse] = {
     for {

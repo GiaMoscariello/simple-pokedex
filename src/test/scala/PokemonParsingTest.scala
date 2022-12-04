@@ -1,4 +1,4 @@
-import models.{FlavorText, Habitat, Language, Pokemon, PokemonSpecies}
+import com.gia.moscariello.simple.pokedex.models._
 import org.scalatest.flatspec.AnyFlatSpec
 
 class PokemonParsingTest extends AnyFlatSpec {

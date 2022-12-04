@@ -1,13 +1,13 @@
-package services
+package com.gia.moscariello.simple.pokedex.services
 
 import cats.effect.IO
-import io.circe.syntax.EncoderOps
-import io.circe.parser.decode
-import models.{TranslationEndpoints, TranslationRequest, TranslationResponse, TranslationResponseError, TranslationResponseSuccess}
+import com.gia.moscariello.simple.pokedex.models._
+import com.gia.moscariello.simple.pokedex.persistence.HttpCache
 import org.typelevel.log4cats.Logger
-import persistence.HttpCache
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
 import sttp.client3.{UriContext, basicRequest}
+import io.circe.parser.decode
+import io.circe.syntax.EncoderOps
 
 case class TranslationApiClient(endpoint: TranslationEndpoints, private val cache: HttpCache[String, String])(implicit logger: Logger[IO]) {
 
@@ -25,7 +25,7 @@ case class TranslationApiClient(endpoint: TranslationEndpoints, private val cach
     basicRequest
       .post(uri"${uri}")
       .body(bodyRequest.asJson.toString)
-      .contentType("text/json", "utf-8")
+      .contentType("application/json", "utf-8")
   }
 
   private def getResult(bodyRequest: TranslationRequest, uri: String): IO[TranslationResponse] = {
@@ -50,11 +50,11 @@ case class TranslationApiClient(endpoint: TranslationEndpoints, private val cach
           .send(backend)
           .flatMap(_.body.fold[IO[TranslationResponse]](
             error => {
-              cache.put(bodyRequest.asJson.toString, error) >>
-                logger.info(error) >>
+                logger.error(s"${uri} ==> $error for request body ${bodyRequest.asJson.toString}") >>
                 IO.fromEither(decode[TranslationResponseError](error))
             },
             success => {
+              logger.info(s"${uri} ==> $success") >>
               cache.put(bodyRequest.asJson.toString, success) >>
                 IO.fromEither(decode[TranslationResponseSuccess](success))
             }

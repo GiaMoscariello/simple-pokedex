@@ -1,9 +1,9 @@
-package config
+package com.gia.moscariello.simple.pokedex.config
 
 import cats.effect.IO
 import cats.implicits._
 
-case class ServerHttpConfig(port: Int, endpointPokemon: String, endpointPokemonTranslated: String)
+case class ServerHttpConfig(port: Int, endpointPokemon: String, endpointPokemonTranslated: String, host: String)
 
 case class ClientHttpConfig(pokemonBaseUrl: String,
                             translationBaseUrl: String,
@@ -30,8 +30,8 @@ object ServerHttpConfig {
       ServerHttpConfig(
         port = sys.env("SERVER_PORT").toInt,
         endpointPokemon = sys.env("SERVER_ENDPOINT_POKEMON"),
-        endpointPokemonTranslated = sys.env("SERVER_ENDPOINT_POKEMON_TRANSLATED")
-
+        endpointPokemonTranslated = sys.env("SERVER_ENDPOINT_POKEMON_TRANSLATED"),
+        host = sys.env("SERVER_HOST")
       )
     )
   }
@@ -43,8 +43,8 @@ object ClientHttpConfig {
       ClientHttpConfig(
         pokemonBaseUrl = sys.env("POKEMON_BASE_URL"),
         translationBaseUrl = sys.env("TRANSLATION_BASE_URL"),
-        endpointPokemon = sys.env("ENDPOINT_POKEMON"),
-        endpointPokemonTranslated = sys.env("ENDPOINT_POKEMON_TRANSLATED"),
+        endpointPokemon = sys.env("CLIENT_ENDPOINT_POKEMON"),
+        endpointPokemonTranslated = sys.env("SERVER_ENDPOINT_POKEMON_TRANSLATED"),
         enpointYodaTranslation = sys.env("ENDPOINT_YODA_TRANSLATION"),
         endpointShakespeaareTranslation = sys.env("ENDPOINT_SHAKESPEARE_TRANSLATION")
       )

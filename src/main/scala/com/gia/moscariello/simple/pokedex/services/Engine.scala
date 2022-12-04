@@ -1,12 +1,12 @@
-package services
+package com.gia.moscariello.simple.pokedex.services
 
 import cats.data
 import cats.effect.IO
+import com.gia.moscariello.simple.pokedex.models._
 import io.circe.syntax.EncoderOps
-import models.{ApiResponseError, HttpError, InternalError, Pokemon, PokemonSpeciesApiResponse, TranslationRequest, TranslationResponse, TranslationResponseError, TranslationResponseSuccess}
-import org.http4s.{ParseFailure, Response}
 import org.http4s.circe.jsonEncoder
 import org.http4s.dsl.Http4sDsl
+import org.http4s.{ParseFailure, Response}
 
 class Engine(private val pokemonClient: PokemonApiClient,
              private val translationClient: TranslationApiClient) {

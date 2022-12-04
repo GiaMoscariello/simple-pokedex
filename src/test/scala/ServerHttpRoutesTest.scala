@@ -1,8 +1,10 @@
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
+import com.gia.moscariello.simple.pokedex.http.ServerRoutes
+import com.gia.moscariello.simple.pokedex.models._
+import com.gia.moscariello.simple.pokedex.persistence.{HttpCache, InMemoryCache}
+import com.gia.moscariello.simple.pokedex.services.{Engine, PokemonApiClient, TranslationApiClient}
 import com.github.tomakehurst.wiremock.client.WireMock
-import http.ServerRoutes
-import models.{ExposedRoutes, PokemonApiEndpoints, TranslationEndpoints}
 import org.http4s.Method.GET
 import org.http4s.Request
 import org.http4s.implicits.{http4sKleisliResponseSyntaxOptionT, http4sLiteralsSyntax}
@@ -11,8 +13,6 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import persistence.{HttpCache, InMemoryCache}
-import services.{Engine, PokemonApiClient, TranslationApiClient}
 
 class ServerHttpRoutesTest extends AnyFlatSpec with BeforeAndAfterEach {
   implicit val logger: SelfAwareStructuredLogger[IO] = Slf4jLogger.getLogger[IO]
@@ -23,12 +23,12 @@ class ServerHttpRoutesTest extends AnyFlatSpec with BeforeAndAfterEach {
   WireMock.configureFor(host, 8080)
 
   val pokemonEndpoints = PokemonApiEndpoints(baseUrl = s"http://${host}:8080", pokemonSpecies = "pokemon-species")
-  val pokemonClient: PokemonApiClient = services.PokemonApiClient(pokemonEndpoints, cache)
+  val pokemonClient: PokemonApiClient = PokemonApiClient(pokemonEndpoints, cache)
 
   val translationEndpoints = TranslationEndpoints(baseUrl = s"http://${host}:8080/translate", yoda="yoda.json", shakespeare = "shakespeare.json")
-  val translationClient: TranslationApiClient = services.TranslationApiClient(translationEndpoints, cache)
+  val translationClient: TranslationApiClient = TranslationApiClient(translationEndpoints, cache)
 
-  val externalEndpoints = ExposedRoutes("pokemon",  "translated")
+  val externalEndpoints = ServerHttpConfig("pokemon",  "translated", 8080, host)
   val engine = new Engine(pokemonClient, translationClient)
   val server = new ServerRoutes(
     externalEndpoints,

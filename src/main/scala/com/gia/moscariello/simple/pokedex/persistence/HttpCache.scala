@@ -1,4 +1,4 @@
-package persistence
+package com.gia.moscariello.simple.pokedex.persistence
 
 import cats.effect.IO
 
@@ -8,5 +8,3 @@ trait HttpCache[Key, Value] {
 
   def put(k: Key, value: Value): IO[Unit]
 }
-
-
