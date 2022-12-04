@@ -18,7 +18,7 @@ class Engine(private val pokemonClient: PokemonApiClient,
 
     queryParameter.fold(
       error => BadRequest(s"Wrong query parameter type: ${error.head.toString}"),
-      cp    =>   getPokemonSpecies(cp).flatMap {
+      cp    =>  getPokemonSpecies(cp).flatMap {
         case Left(err) => createErrorResponse(err)
         case Right(pokemon) => createPokemonResponseFor(pokemon, withTranslation)
       }
@@ -62,9 +62,12 @@ class Engine(private val pokemonClient: PokemonApiClient,
   }
 
   private def createTranslatedPokemonFrom(response: IO[TranslationResponse], pokemon: Pokemon): IO[Pokemon] = {
-    response.map {
-      case _: TranslationResponseError => pokemon
-      case succ: TranslationResponseSuccess => pokemon.copy(description = succ.contents.translated)
+    response.attempt.map {
+      case Right(response) =>  response match {
+        case _: TranslationResponseError => pokemon
+        case succ: TranslationResponseSuccess => pokemon.copy(description = succ.contents.translated)
+      }
+      case Left(_) => pokemon
     }
   }
 
